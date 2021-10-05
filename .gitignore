@@ -1,0 +1,5 @@
+*/build/
+*/dist/
+**/*/__pycache__/
+src/json_tools2.egg-info/
+
