@@ -1,0 +1,18 @@
+{
+  "fields": [
+    {
+      "metadata": {},
+      "name": "name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "__oid__",
+      "nullable": true,
+      "type": "string"
+    }
+  ],
+  "type": "struct"
+}
+
