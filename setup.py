@@ -18,7 +18,9 @@ setup(
     url="https://github.com/stonezhong/json_tools2",
     author="Stone Zhong",
     author_email="stonezhong@hotmail.com",
+    license="MIT",
     classifiers=[
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
     ],
     package_dir = {'': 'src'},
