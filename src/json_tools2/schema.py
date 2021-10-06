@@ -47,6 +47,15 @@ def _update_schema_for_primitive_value(schema, value):
             schema["type"] = "number"
         else:
             raise SchemaError()
+    elif type(value) == bool:
+        if schema["type"] == "boolean":
+            # good
+            pass
+        elif schema["type"] == "null":
+            schema["type"] = "boolean"
+        else:
+            raise SchemaError()
+
 
 # update schema with object
 def _update_schema(schema, obj):
@@ -72,7 +81,7 @@ def _update_schema(schema, obj):
             if value is None:
                 # null is compatible with any type
                 pass
-            elif type(value) in [str, int, float]:
+            elif type(value) in [str, int, float, bool]:
                 _update_schema_for_primitive_value(field_type, value)
             elif type(value) == dict:
                 _update_schema(field_type, value)
@@ -99,7 +108,7 @@ def _update_schema(schema, obj):
             if v is None:
                 # null is compatible with any type
                 pass
-            elif type(v) in [str, int, float]:
+            elif type(v) in [str, int, float, bool]:
                 _update_schema_for_primitive_value(items, v)
             elif type(v) == dict:
                 _update_schema(items, v)
