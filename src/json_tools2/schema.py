@@ -18,6 +18,10 @@ def infer_schema(objs, schema=None):
         _update_schema(ret_schema, obj)
     return ret_schema
 
+def merge_schema(schema, new_schema):
+    merged_schema = deepcopy(schema)
+    _update_schema(merged_schema, _create_example_from_schema(new_schema))
+    return merged_schema
 
 class SchemaError(Exception):
     pass
@@ -124,4 +128,25 @@ def _update_schema(schema, obj):
         raise SchemaError()
 
 
+def _create_example_from_schema(schema):
+    if schema['type'] == 'string':
+        return ""
+    if schema['type'] == 'null':
+        return None
+    if schema['type'] == 'integer':
+        return 1
+    if schema['type'] == 'number':
+        return 1.0
+    if schema['type'] == 'boolean':
+        return True
+    if schema['type'] == 'object':
+        ret = {}
+        for property_name, property_schema in schema['properties'].items():
+            ret[property_name] = _create_example_from_schema(property_schema)
+        return ret
+    if schema['type'] == 'array':
+        ret = [_create_example_from_schema(schema['items'])]
+        return ret
+    raise SchemaError()
+    
 
