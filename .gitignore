@@ -1,5 +1,7 @@
-*/build/
-*/dist/
-**/*/__pycache__/
+.idea/
 src/json_tools2.egg-info/
+dist/
+build/
+__pycache__/
+
 
