@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+from copy import deepcopy
 
 #############################################################
 # Infer schema from bunch of json objects
 # objs: iterable of json
 #############################################################
-def infer_schema(objs):
-    schema = {
-        "type": "object",
-        "properties": {}
-    }
+def infer_schema(objs, schema=None):
+    if schema is None:
+        ret_schema = {
+            "type": "object",
+            "properties": {}
+        }
+    else:
+        ret_schema = deepcopy(schema)
     for obj in objs:
         _update_schema(schema, obj)
-    return schema
+    return ret_schema
 
 
 class SchemaError(Exception):
