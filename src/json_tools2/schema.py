@@ -15,7 +15,7 @@ def infer_schema(objs, schema=None):
     else:
         ret_schema = deepcopy(schema)
     for obj in objs:
-        _update_schema(schema, obj)
+        _update_schema(ret_schema, obj)
     return ret_schema
 
 
