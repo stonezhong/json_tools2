@@ -1,4 +1,7 @@
 # create test environment
+
+Note, the requirement.txt has been tested for python 3.10.6.
+
 ```bash
 cd test
 mkdir .testenv
