@@ -31,17 +31,17 @@ class _ValueType(Enum):
         
         raise SchemaError(f"{type(value)} is not a valid JSON value")
     
-class _ValueSchema:
+class ValueSchema:
     value_type      : _ValueType
-    item_type       :  Optional["_ValueSchema"]
-    property_types  : Optional[Dict[str, "_ValueSchema"]]
+    item_type       :  Optional["ValueSchema"]
+    property_types  : Optional[Dict[str, "ValueSchema"]]
     null_merged     : bool
 
     def __init__(
         self, 
         value_type:_ValueType, 
-        item_type:Optional["_ValueSchema"]=None,
-        property_types:Optional[Dict[str, "_ValueSchema"]]=None
+        item_type:Optional["ValueSchema"]=None,
+        property_types:Optional[Dict[str, "ValueSchema"]]=None
     ):
         self.value_type     = value_type
         self.item_type      = item_type
@@ -63,7 +63,7 @@ class _ValueSchema:
             ]
         }
 
-    def clone(self) -> "_ValueSchema":
+    def clone(self) -> "ValueSchema":
         new_item_type = None if self.item_type is None else self.item_type.clone()
         if self.property_types is None:
             new_property_types = None
@@ -72,7 +72,34 @@ class _ValueSchema:
                 property_name:property_type.clone() for property_name, property_type \
                     in self.property_types.items()
             }
-        return _ValueSchema(self.value_type, item_type=new_item_type, property_types=new_property_types)
+        return ValueSchema(self.value_type, item_type=new_item_type, property_types=new_property_types)
+
+    def dump_json(self):
+        return {
+            "value_type": self.value_type.value,
+            "item_type": None if self.item_type is None else self.item_type.dumps(),
+            "property_types": None if self.property_types is None else \
+                {
+                    property_name: property_type.dumps() for property_name, property_type in self.property_types
+                },
+            "null_merged": self.null_merged
+        }
+
+    @classmethod
+    def load_json(cls, payload):
+        value_type = _ValueType(payload["value_type"])
+        item_type = None if payload["item_type"] is None else cls.load_json(payload["item_type"])
+        if payload["property_types"] is None:
+            property_types = None
+        else:
+            property_types = {
+                property_name: cls.load_json(property_type) \
+                    for property_name, property_type in payload["property_types"].items()
+            }
+        ret = cls(value_type, item_type=item_type, property_types=property_types)
+        ret.null_merged = payload["null_merged"]
+        return ret
+        
 
     def to_json_raw(self) -> Any:
         if self.value_type == _ValueType.NULL:
@@ -103,7 +130,7 @@ class _ValueSchema:
 
         assert False  # impossible
     
-    def merge_from(self, schema:"_ValueSchema") -> None:
+    def merge_from(self, schema:"ValueSchema") -> None:
         if self.value_type == _ValueType.NULL:
             # ok, switch to the new schema, null_merged should be set already            
             self.value_type = schema.value_type
@@ -186,17 +213,17 @@ class _ValueSchema:
         assert False # impossible
 
 
-def infer_schema(value:Any) -> _ValueSchema:
-    return _infer_schema(value).to_json()
+def infer_schema(value:Any) -> Any:
+    return get_schema(value).to_json()
 
 
-def _infer_schema(value:Any) -> _ValueSchema:
+def get_schema(value:Any) -> ValueSchema:
     value_type = _ValueType.from_value(value)
 
     if value_type == _ValueType.OBJECT:
-        obj_schema = _ValueSchema(value_type=value_type, property_types={})
+        obj_schema = ValueSchema(value_type=value_type, property_types={})
         for property_name, property_value in value.items():
-            property_schema = _infer_schema(property_value)
+            property_schema = get_schema(property_value)
             if property_name in obj_schema.property_types:
                 obj_schema.property_types[property_name].merge_from(property_schema)
             else:
@@ -204,9 +231,9 @@ def _infer_schema(value:Any) -> _ValueSchema:
         return obj_schema
 
     if value_type == _ValueType.ARRAY:
-        array_schema = _ValueSchema(value_type=value_type, item_type=None)
+        array_schema = ValueSchema(value_type=value_type, item_type=None)
         for item in value:
-            item_schema = _infer_schema(item)
+            item_schema = get_schema(item)
             if array_schema.item_type is None:
                 array_schema.item_type = item_schema
             else:
@@ -214,7 +241,7 @@ def _infer_schema(value:Any) -> _ValueSchema:
         return array_schema
 
     # it must be primitive type
-    return _ValueSchema(value_type=value_type)  
+    return ValueSchema(value_type=value_type)  
 
 
 class SchemaError(Exception):

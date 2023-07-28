@@ -1,6 +1,8 @@
-# JSON related tools
+# Index
+* [Infer Schema](#infer-schema)
+* [Schema evolvement](#schema-evolvement)
 
-## Infer Schema
+# Infer Schema
 
 With function `infer_schema`, you can get schema from json object. The output complys to [JSON Schema Specification](https://json-schema.org/specification.html). Here is an example:
 
@@ -85,4 +87,51 @@ def main():
 if __name__ == '__main__':
     main()
 
+```
+
+# Schema evolvement
+
+Think about such case:
+* You have json object stream
+* You can to merge schema for each object from the stream
+* You want to save the merged schema, so in case you need, to can load schema saved and continue to merge more objects from the stream.
+
+Here is an example:
+```python
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+from json_tools2 import get_schema, ValueSchema
+import json
+
+def main():
+    schema = get_schema(1)
+    print(json.dumps(schema.to_json(), indent=4))
+    saved_schema = schema.dump_json()
+    # You got a json object saved_schema which you can save the inferred schema
+
+    # load schema
+    schema = ValueSchema.load_json(saved_schema)
+    schema.merge_from(get_schema(None))
+    print(json.dumps(schema.to_json(), indent=4))
+
+
+if __name__ == '__main__':
+    main()
+```
+Output
+```
+{
+    "type": "integer"
+}
+{
+    "anyOf": [
+        {
+            "type": "integer"
+        },
+        {
+            "type": "null"
+        }
+    ]
+}
 ```
