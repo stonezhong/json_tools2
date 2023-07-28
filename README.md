@@ -92,9 +92,8 @@ if __name__ == '__main__':
 # Schema evolvement
 
 Think about such case:
-* You have json object stream
-* You can to merge schema for each object from the stream
-* You want to save the merged schema, so in case you need, to can load schema saved and continue to merge more objects from the stream.
+* You receive json object every day.
+* Every day, you want to load schema inferred from the json object from the prior day, and merge it with the schema inferred from today's object, and then save the inferred schema.
 
 Here is an example:
 ```python
