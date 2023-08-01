@@ -1,6 +1,10 @@
 # Index
 * [Infer Schema](#infer-schema)
 * [Schema evolvement](#schema-evolvement)
+* [JSON Transform](#json-transform)
+    * [json_remove_field](#json_remove_field)
+    * [json_traverse_transform](#json_traverse_transform)
+    * [json_convert_to_array](#json_convert_to_array)
 
 # Infer Schema
 
@@ -133,4 +137,107 @@ Output
         }
     ]
 }
+```
+
+# JSON Transform
+## json_remove_field
+
+```python
+json_remove_field(obj:Any, field_name:str) -> Any:
+```
+It removes field specified in `field_name` recursively.
+
+Example:
+```python
+json_remove_field({
+    "foo": 1, 
+    "bar": {"foo": 1, "t": 2}
+}, )
+```
+it will remove field "foo" recursively, so it will return
+```json
+{
+    "bar": {
+        "t": 2
+    }
+}
+```
+
+## json_traverse_transform
+```
+json_traverse_transform(obj: Any, path:str, handler:Callable[[Any], None]) -> Any:
+```
+It traverse the input json object `obj`, for each object that match the path pattern specified in `path`, it calls the function `handler`. Eventually `obj` is retuened however, it might be mutated by `handler`.
+
+Example:
+```python
+def handler(o):
+    if type(o) != dict:
+        return o
+    x = o.get("x", 0)
+    y = o.get("y", 0)
+    if type(x) in (int, float) and type(y) in (int, float):
+        o["sum"] = x+y
+
+json_traverse_transform(
+    {
+        "cords": [
+            {"x": 1, "y": 2},
+            {"x": 2, "y": 3},
+        ]
+    }, "cords[]", handler
+)
+```
+
+returns
+```json
+{
+    "cords": [
+        {"x": 1, "y": 2, "sum": 3},
+        {"x": 2, "y": 3, "sum": 5},
+    ]
+}
+```
+
+## json_convert_to_array
+```python
+json_convert_to_array(obj:Any, field_name:str, new_field_name:str, path="")->Any:
+```
+For each matching child object based on pattern path, it convert it's field `field_name` from dictionary into `list`, result is stored in field `new_field_name`, the original field is either deleted or overritten.
+
+Example:
+```python
+json_convert_to_array([
+    {
+        "q1": {
+            "score": {"math": 1, "physics": 2}
+        }
+    },
+    {
+        "q1": {
+            "score": {"math": 2, "physics": 3}
+        }
+    }
+], "score", "score2", "[].q1")
+```
+returns
+```json
+[
+    {
+        "q1": {
+            "score": [
+                {"key": "math", "value": 1},
+                {"key": "physics", "value": 2}
+            ]
+        }
+    },
+    {
+        "q1": {
+            "score": [
+                {"key": "math", "value": 2},
+                {"key": "physics", "value": 3}
+            ]
+        }
+    },
+]
 ```
