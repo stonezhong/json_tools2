@@ -38,7 +38,7 @@ Output
 ---
 When you have an array of element from different types, or object with the same property but from different type, we need to merge schema.
 
-case 1: `"a"` and `2` are of different types and we need to merge schema
+case 1: `2.1` and `2` are of different types and we need to merge schema
 ```json
 [2.1, 2]
 ```
@@ -152,7 +152,7 @@ Example:
 json_remove_field({
     "foo": 1, 
     "bar": {"foo": 1, "t": 2}
-}, )
+}, "foo")
 ```
 it will remove field "foo" recursively, so it will return
 ```json
@@ -238,7 +238,7 @@ returns
 [
     {
         "q1": {
-            "score": [
+            "score2": [
                 {"key": "math", "value": 1},
                 {"key": "physics", "value": 2}
             ]
@@ -246,7 +246,7 @@ returns
     },
     {
         "q1": {
-            "score": [
+            "score2": [
                 {"key": "math", "value": 2},
                 {"key": "physics", "value": 3}
             ]
