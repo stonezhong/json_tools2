@@ -44,7 +44,12 @@ class ListElementAccessor(Accessor):
             return []
         return obj
 
-
+# Valid path are
+# Given a jsob object X, here is what the path represents
+# "foo.bar"        --> [X.foo.bar]
+# "foo.bar[]"      --> [X.foo.bar[0], X.foo.bar[1], ...]
+# "foo.bar[].x"    --> [X.foo.bar[0].x, X.foo.bar[1].x, ...]
+# "foo.bar[][]"    --> [X.foo.bar[0][0], X.foo.bar[0][1], X.foo.bar[1][0], X.foo.bar[1][1], ...]
 def accessors_from_path(path:str) -> List[Accessor]:
     ret = []
     segs = path.split(".")
@@ -58,7 +63,9 @@ def accessors_from_path(path:str) -> List[Accessor]:
             idx_str = seg[idx_start:]
         if field_name:
             ret.append(ObjFieldAccessor(field_name))
-        for _ in range(0, len(idx_str)//2):
+        depth = len(idx_str)//2
+        assert idx_str == "[]"*depth
+        for _ in range(depth):
             ret.append(ListElementAccessor())
     return ret
 

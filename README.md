@@ -40,11 +40,11 @@ When you have an array of element from different types, or object with the same 
 
 case 1: `"a"` and `2` are of different types and we need to merge schema
 ```json
-["a", 2]
+[2.1, 2]
 ```
-case 2: `"a"` and `2` are of different types and we need to merge schema
+case 2: `2.1` and `2` are of different types and we need to merge schema
 ```json
-[{"foo": "a"}, {"foo": 2}]
+[{"foo": 2.1}, {"foo": 2}]
 ```
 
 Following rules applies when we do schema merging:
@@ -168,6 +168,19 @@ it will remove field "foo" recursively, so it will return
 json_traverse_transform(obj: Any, path:str, handler:Callable[[Any], None]) -> Any:
 ```
 It traverse the input json object `obj`, for each object that match the path pattern specified in `path`, it calls the function `handler`. Eventually `obj` is retuened however, it might be mutated by `handler`.
+
+Path pattern:
+```
+Given object, a path represent a list of object extracted from object.
+
+For example, given object X, here are example pathes:
+
+"foo"        represent X.foo
+"foo.bar"    represent X.foo.bar
+"foo[]"      represent [X.foo[0], X.foo[1], ...]
+"foo[].x"    represent [X.foo[0].x, X.foo[1].x, ...]
+"foo[].x[]"  represent [X.foo[0].x[0], X.foo[0].x[1], ..., X.foo[1].x[0], X.foo[1].x[1], ...]
+```
 
 Example:
 ```python
